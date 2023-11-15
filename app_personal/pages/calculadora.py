@@ -1,13 +1,16 @@
 import streamlit as st
+import numpy as np
 import pandas as pd  # Importa la biblioteca de pandas
+import matplotlib.pyplot as plt
 from datetime import datetime
 import calendar
 import warnings
+
 warnings.filterwarnings("ignore")
 
 st.title("Bienvenido a Calculadora")
 
-# ---- opciones de calculadora ----
+# ---- opciones de de income y outcome de la calculadora ----
 incomes = ["Salario", "Mesa de dinero", "Inversiones", "Otros ingresos"]
 expenses = ["Alimentación", "Transporte", "Entretenimiento", "Ahorros", "Otros gastos"]
 
@@ -16,17 +19,22 @@ page_icon = "📝"
 layout = "centered"
 
 
-
-# print("Creando dataframes base...")
-# DF_MASTER_INCOME = pd.DataFrame()
-# DF_MASTER_EXPENSES = pd.DataFrame()
-
 # ---- funciones de calculadora ----
+
 # Definimos la lista de años, meses y días
 years = [datetime.now().year + i for i in range(0, 5)]
 months = list(calendar.month_name[1:])
 
+# Definimos la función para calcular el total de ingresos
+def sumar_datos(data):
+    return data.sum(axis=1).sum()
 
+# Definimos la función para calcular la media de ingresos
+def calcular_media(data):
+    return data.mean(axis=1).mean()
+
+
+# -----------  Calculadora de gastos personales -----------
 # Definimos la función para calcular el total de ingresos
 st.subheader("Ingrese sus ingresos")
 with st.form("entry_form", clear_on_submit=True):
@@ -79,13 +87,55 @@ with st.form("entry_form", clear_on_submit=True):
         st.write(DF_MASTER_INCOME)
         st.write(DF_MASTER_EXPENSES)
  
+if st.button("Describir datos"):
+    st.subheader("Balance de ingresos y gastos")
+    st.write("Calculando balance...")
+    try:
+        DF_MASTER_EXPENSES = pd.read_csv("expenses.csv", index_col=[0])
+        DF_MASTER_INCOME = pd.read_csv("income.csv", index_col=[0])
+    except:
+        st.write("No hay datos para calcular el balance")
+
+    total_ingresos = sumar_datos(DF_MASTER_INCOME)
+    total_gastos = sumar_datos(DF_MASTER_EXPENSES)
+    balance = total_ingresos - total_gastos
+    st.write(f"Total de ingresos: {total_ingresos}")
+    st.write(f"Total de gastos: {total_gastos}")
+    if balance > 0:
+        st.subheader(f"Balance positivo: {balance}")
+    else:   
+        st.subheader("Tienes un balance negativo, debes revisar tus gastos")
+        st.write(f"Balance negativo: {balance}")
     
-    # try:
-    #     DF_MASTER_EXPENSES = pd.read_csv("expenses.csv", index_col=[0])
-    #     DF_MASTER_INCOME = pd.read_csv("income.csv", index_col=[0])
-    #     st.write(DF_MASTER_INCOME)
-    #     st.write(DF_MASTER_EXPENSES)
-    # except:
-    #     print()
+    st.subheader("Media de ingresos y gastos")
+    media_ingresos = calcular_media(DF_MASTER_INCOME)
+    media_gastos = calcular_media(DF_MASTER_EXPENSES)
+    st.write(f"Media de ingresos: {media_ingresos}")
+    st.write(f"Media de gastos: {media_gastos}")
+
+
+if st.button("Graficar mis gastos e ingresos"): 
+    try:
+        DF_MASTER_EXPENSES = pd.read_csv("expenses.csv", index_col=[0])
+        DF_MASTER_INCOME = pd.read_csv("income.csv", index_col=[0])
+    except:
+        st.write("No hay datos para graficar el balance")
+        
+    income_values = DF_MASTER_INCOME.sum().tolist()
+    expense_values = DF_MASTER_EXPENSES.sum().tolist()
+    st.write(income_values)
+    st.write(expense_values)
+
+    income_labels = list(DF_MASTER_INCOME.columns)
+    expenses_labels = list(DF_MASTER_EXPENSES.columns)
+
+    fig_gastos,ax = plt.subplots()
+    ax.bar(income_labels, income_values, label="Ingresos")
+    
+    fig_ingresos,ax2 = plt.subplots()
+    ax2.bar(expenses_labels, expense_values, label="Gastos")
+
+    st.pyplot(fig_gastos)
+    st.pyplot(fig_ingresos)
 
 
