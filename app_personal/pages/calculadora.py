@@ -123,8 +123,8 @@ if st.button("Graficar mis gastos e ingresos"):
         
     income_values = DF_MASTER_INCOME.sum().tolist()
     expense_values = DF_MASTER_EXPENSES.sum().tolist()
-    st.write(income_values)
-    st.write(expense_values)
+    # st.write(income_values)
+    # st.write(expense_values)
 
     income_labels = list(DF_MASTER_INCOME.columns)
     expenses_labels = list(DF_MASTER_EXPENSES.columns)
@@ -135,7 +135,10 @@ if st.button("Graficar mis gastos e ingresos"):
     fig_ingresos,ax2 = plt.subplots()
     ax2.bar(expenses_labels, expense_values, label="Gastos")
 
+    st.subheader("Gráfica de gastos")
     st.pyplot(fig_gastos)
+    
+    st.subheader("Gráfica de ingresos")
     st.pyplot(fig_ingresos)
 
 
